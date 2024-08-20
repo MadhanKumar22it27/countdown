@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e0e7ff;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+
+        .timer {
+            text-align: center;
+            background-color: #f0f4ff;
+            width: 50rem;
+            padding: 50px;
+            height: 20rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #display {
+            color: rgba(1, 61, 106, 1);
+            font-size: 22px;
+            font-family: Verdana;
+            
+            font-weight: 900;
+            margin-top: 80px;
+            margin-bottom: 20px;
+        }
+
+        .buttons button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            margin-top: 9rem;
+            border: none;
+            width: 7rem;
+            border-radius: 15px;
+            background-color: #005f99;
+            color: white;
+            cursor: pointer;
+        }
+
+        .buttons button:hover {
+            background-color: #004080;
+        }
+
+     
+        #current-time {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+        }
+        #box{
+            padding: 5px;
+            font-size: 1em;
+            font-weight: 550;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <!-- <h1>Admin Page</h1> -->
+    <div class="timer">
+        <label for="new-time" id="display">Set New Time (seconds):</label>
+        <input type="number" id="box" min="0">
+        <div class="buttons">
+            <button onclick="setTime()">Set Time</button>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        function setTime() {
+            const newTime = document.getElementById('box').value;
+            socket.emit('set_time', { new_time: parseInt(newTime) });
+        }
+    </script>
+</body>
+</html>

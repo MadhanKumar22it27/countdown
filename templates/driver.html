@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e0e7ff;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+
+        .timer {
+            text-align: center;
+            background-color: #f0f4ff;
+            padding: 50px;
+            height: 20rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #display {
+            color: rgba(1, 61, 106, 1);
+            font-size: 48px;
+            font-family: Verdana;
+            font-weight: 900;
+            margin-top: 80px;
+            margin-bottom: 20px;
+        }
+
+        .buttons button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            width: 7rem;
+            border-radius: 15px;
+            background-color: #005f99;
+            color: white;
+            cursor: pointer;
+        }
+
+        .buttons button:hover {
+            background-color: #004080;
+        }
+
+        #stop {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            width: 7rem;
+            border-radius: 15px;
+            background-color: rgb(255, 82, 82);
+            color: white;
+            cursor: pointer;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        #current-time {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+        }
+
+        .right-buttons {
+            position: absolute;
+            top: 50%;
+            right: 9rem;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-buttons button {
+            background-color: orange;
+            color: white;
+            margin-bottom: 15px;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div id="current-time"></div>
+    <div class="timer">
+        <div id="display">05:00</div>
+        <div class="buttons">
+            <button id="start">Start</button>
+            <button id="reset">Reset</button>
+        </div>
+    </div>
+    <button id="stop">Stop</button>
+
+    <div class="right-buttons">
+        <button id="studentView">StudentView</button>
+        <a href="{{url_for('start_tracking')}}"> <button id="startTracking">StartTracking</button></a>
+
+    </div>
+
+    <audio id="beep-sound" src="static/beep.mp3" preload="auto"></audio>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        let isRunning = false;
+        let remainingTime = 300; // 5 minutes in seconds
+
+        const display = document.getElementById('display');
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        const resetButton = document.getElementById('reset');
+        const beepSound = document.getElementById('beep-sound');
+
+        startButton.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                socket.emit('start_timer');
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            if (isRunning) {
+                isRunning = false;
+                socket.emit('stop_timer');
+            }
+        });
+
+        resetButton.addEventListener('click', () => {
+            isRunning = false;
+            socket.emit('reset_timer');
+        });
+
+        socket.on('timer_update', (data) => {
+            remainingTime = data.remaining_time;
+            isRunning = data.is_running;
+            display.innerText = formatTime(remainingTime);
+        });
+
+        socket.on('beep', () => {
+            beepSound.play();
+        });
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime(); // Initial call to display time immediately
+    </script>
+</body>
+
+</html>
